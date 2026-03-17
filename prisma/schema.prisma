@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  employees Employee[]
+
+  @@map("departments")
+}
+
+model Employee {
+  id         String       @id @default(cuid())
+  firstName  String       @map("first_name")
+  lastName   String       @map("last_name")
+  email      String       @unique
+  phone      String
+  department Department   @relation(fields: [departmentId], references: [id])
+  departmentId String     @map("department_id")
+  position   String
+  hireDate   DateTime     @map("hire_date")
+  salary     Int
+  address    String
+  status     String
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  userAccount  UserAccount?
+  activityLogs ActivityLog[]
+
+  @@map("employees")
+}
+
+model UserAccount {
+  id          String      @id @default(cuid())
+  email       String      @unique
+  passwordHash String     @map("password_hash")
+  role        String
+  canView     Boolean     @default(true)  @map("can_view")
+  canAdd      Boolean     @default(false) @map("can_add")
+  canEdit     Boolean     @default(false) @map("can_edit")
+  canDelete   Boolean     @default(false) @map("can_delete")
+  isActive    Boolean     @default(true)  @map("is_active")
+  avatar      String?     
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt      @map("updated_at")
+
+  employee    Employee    @relation(fields: [employeeId], references: [id])
+  employeeId  String      @map("employee_id") @unique
+
+  activityLogs ActivityLog[]
+
+  @@map("user_accounts")
+}
+
+model ActivityLog {
+  id           String      @id @default(cuid())
+  action       String
+  employeeId   String      @map("employee_id")
+  employeeName String      @map("employee_name")
+  userId       String      @map("user_id")
+  userName     String      @map("user_name")
+  timestamp    DateTime
+  details      String?
+
+  employee     Employee    @relation(fields: [employeeId], references: [id])
+  userAccount  UserAccount @relation(fields: [userId], references: [id])
+
+  @@map("activity_logs")
+}
+
