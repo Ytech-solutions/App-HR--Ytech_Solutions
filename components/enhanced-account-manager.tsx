@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useEmployees } from "@/lib/employees-context"
 import { useAuth } from "@/lib/auth-context"
 import { rolePermissions, getPermissionsByRole, getRoleDescription } from "@/lib/permissions"
@@ -63,7 +63,8 @@ import {
   Trash2, 
   Mail, 
   Shield, 
-  Key, 
+  Key,
+  RefreshCw, 
   MoreVertical,
   CheckCircle,
   XCircle,
@@ -80,9 +81,7 @@ import {
   Unlock,
   Calendar,
   Check,
-  PowerOff,
-  Search,
-  Filter
+  PowerOff
 } from "lucide-react"
 
 interface UserAccount {
@@ -120,14 +119,12 @@ export function EnhancedAccountManager() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [roleFilter, setRoleFilter] = useState<string>("all")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
+  const [resetPasswordInfo, setResetPasswordInfo] = useState<{ employeeName: string; emailSent: boolean } | null>(null)
   const [formData, setFormData] = useState({
     employeeId: "",
     role: "RH"  // Changed from "Employee" to "RH"
   })
-  const [errors, setErrors] = useState<Record<string, string>>({})
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
 
@@ -140,7 +137,7 @@ export function EnhancedAccountManager() {
         setUserAccounts(data)
       }
     } catch (error) {
-      // Erreur lors du chargement des comptes
+      console.error('Erreur lors du chargement des comptes:', error)
     } finally {
       setLoading(false)
     }
@@ -155,48 +152,27 @@ export function EnhancedAccountManager() {
     !userAccounts.some(account => account.employeeId === emp.id)
   )
 
-  // Filtrer et paginer les comptes
-  const filteredAndSortedAccounts = useMemo(() => {
-    let filtered = userAccounts.filter((account) => {
-      const matchesSearch =
-        account.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (account.employee && 
-          `${account.employee.firstName} ${account.employee.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()))
-      const matchesRole =
-        roleFilter === "all" || account.role === roleFilter
-      const matchesStatus =
-        statusFilter === "all" || 
-        (statusFilter === "active" && account.isActive) ||
-        (statusFilter === "inactive" && !account.isActive)
-      return matchesSearch && matchesRole && matchesStatus
-    })
-
-    return filtered
-  }, [userAccounts, searchQuery, roleFilter, statusFilter])
-
-  // Validation du formulaire
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-    
-    if (!formData.employeeId) {
-      newErrors.employeeId = "Veuillez sélectionner un employé"
-    }
-    
-    if (!formData.role) {
-      newErrors.role = "Veuillez sélectionner un rôle"
-    }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
   const handleCreateAccount = async () => {
-    // Validation
-    if (!validateForm()) {
-      return
-    }
-    
     try {
+      // Validation
+      if (!formData.employeeId) {
+        toast({
+          title: "❌ Erreur de validation",
+          description: "Veuillez sélectionner un employé",
+          variant: "destructive"
+        })
+        return
+      }
+      
+      if (!formData.role) {
+        toast({
+          title: "❌ Erreur de validation",
+          description: "Veuillez sélectionner un rôle",
+          variant: "destructive"
+        })
+        return
+      }
+      
       const response = await fetch('/api/accounts', {
         method: 'POST',
         headers: {
@@ -209,20 +185,29 @@ export function EnhancedAccountManager() {
         const newAccount = await response.json()
         setUserAccounts(prev => [...prev, newAccount])
         setIsCreateDialogOpen(false)
-        setFormData({ employeeId: "", role: "RH" })  // Changed from "Employee" to "RH"
-        setErrors({})
+        setFormData({ employeeId: "", role: "RH" })
         
-        // Afficher un message de succès avec le mot de passe temporaire
-        if (newAccount.emailSent) {
-          alert(`Compte créé avec succès!\n\nEmail: ${newAccount.email}\nMot de passe temporaire: ${newAccount.temporaryPassword}\n\nL'employé recevra ces informations par email.`)
-        }
+        // Afficher un message de succès
+        toast({
+          title: "✅ Compte créé avec succès",
+          description: `Le compte pour ${newAccount.employee?.firstName} ${newAccount.employee?.lastName} a été créé. ${newAccount.emailSent ? 'Un email a été envoyé avec les identifiants.' : ''}`,
+          variant: "default"
+        })
       } else {
         const errorData = await response.json()
-        alert(`Erreur: ${errorData.error || 'Erreur lors de la création du compte'}`)
+        toast({
+          title: "❌ Erreur de création",
+          description: errorData.error || 'Erreur lors de la création du compte',
+          variant: "destructive"
+        })
       }
     } catch (error) {
-      // Erreur lors de la création du compte
-      alert('Erreur lors de la création du compte')
+      console.error('Erreur lors de la création du compte:', error)
+      toast({
+        title: "❌ Erreur système",
+        description: "Une erreur est survenue lors de la création du compte",
+        variant: "destructive"
+      })
     }
   }
 
@@ -253,7 +238,7 @@ export function EnhancedAccountManager() {
         })
       }
     } catch (error) {
-      // Error toggling account status
+      console.error('Error toggling account status:', error)
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la mise à jour",
@@ -285,10 +270,27 @@ export function EnhancedAccountManager() {
         )
         setIsEditDialogOpen(false)
         setSelectedAccount(null)
+        
+        toast({
+          title: "✅ Compte mis à jour",
+          description: "Les informations du compte ont été mises à jour avec succès",
+          variant: "default"
+        })
+      } else {
+        const errorData = await response.json()
+        toast({
+          title: "❌ Erreur de mise à jour",
+          description: errorData.error || 'Erreur lors de la mise à jour du compte',
+          variant: "destructive"
+        })
       }
     } catch (error) {
-      // Erreur lors de la mise à jour du compte
-      alert('Erreur lors de la mise à jour du compte')
+      console.error('Erreur lors de la mise à jour du compte:', error)
+      toast({
+        title: "❌ Erreur système",
+        description: "Une erreur est survenue lors de la mise à jour du compte",
+        variant: "destructive"
+      })
     }
   }
 
@@ -304,20 +306,74 @@ export function EnhancedAccountManager() {
         setUserAccounts(prev => prev.filter(account => account.id !== selectedAccount.id))
         setIsDeleteDialogOpen(false)
         setSelectedAccount(null)
+        
+        toast({
+          title: "✅ Compte supprimé",
+          description: "Le compte utilisateur a été supprimé avec succès",
+          variant: "default"
+        })
+      } else {
+        const errorData = await response.json()
+        toast({
+          title: "❌ Erreur de suppression",
+          description: errorData.error || 'Erreur lors de la suppression du compte',
+          variant: "destructive"
+        })
       }
     } catch (error) {
-      // Erreur lors de la suppression du compte
-      alert('Erreur lors de la suppression du compte')
+      console.error('Erreur lors de la suppression du compte:', error)
+      toast({
+        title: "❌ Erreur système",
+        description: "Une erreur est survenue lors de la suppression du compte",
+        variant: "destructive"
+      })
     }
   }
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
+  const handleResetPassword = async (accountId: string) => {
+    try {
+      const response = await fetch('/api/accounts', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: accountId })
+      })
 
-  const handlePageSizeChange = (newPageSize: number) => {
-    setPageSize(newPageSize)
-    setCurrentPage(1) // Reset to first page when changing page size
+      if (response.ok) {
+        const result = await response.json()
+        
+        // Afficher un message de succès avec le toast
+        const account = userAccounts.find(acc => acc.id === accountId)
+        const employeeName = account?.employee 
+          ? `${account.employee.firstName} ${account.employee.lastName}`
+          : account?.email
+        
+        // Préparer les infos pour la popup
+        setResetPasswordInfo({ employeeName, emailSent: result.emailSent })
+        setIsSuccessDialogOpen(true)
+        
+        toast({
+          title: "✅ Mot de passe réinitialisé avec succès",
+          description: `Un nouveau mot de passe temporaire a été généré pour ${employeeName}.${result.emailSent ? ' Un email a été envoyé.' : ''}`,
+          variant: "default"
+        })
+      } else {
+        const errorData = await response.json()
+        toast({
+          title: "❌ Erreur de réinitialisation",
+          description: errorData.error || 'Erreur lors de la réinitialisation du mot de passe',
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      console.error('Erreur lors de la réinitialisation du mot de passe:', error)
+      toast({
+        title: "❌ Erreur système",
+        description: "Une erreur est survenue lors de la réinitialisation du mot de passe",
+        variant: "destructive"
+      })
+    }
   }
 
   const getRoleIcon = (role: string) => {
@@ -351,13 +407,21 @@ export function EnhancedAccountManager() {
   }
 
   // Pagination logic
-  const paginatedAccounts = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize
-    const endIndex = startIndex + pageSize
-    return filteredAndSortedAccounts.slice(startIndex, endIndex)
-  }, [filteredAndSortedAccounts, currentPage, pageSize])
+  const paginatedAccounts = userAccounts.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
 
-  const totalPages = Math.ceil(filteredAndSortedAccounts.length / pageSize)
+  const totalPages = Math.ceil(userAccounts.length / pageSize)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize)
+    setCurrentPage(1) // Reset to first page when changing page size
+  }
 
   if (loading) {
     return (
@@ -459,41 +523,6 @@ export function EnhancedAccountManager() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Barre de recherche et filtres */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher par email ou nom..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrer par rôle" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les rôles</SelectItem>
-                <SelectItem value="IT">IT</SelectItem>
-                <SelectItem value="RH">RH</SelectItem>
-                <SelectItem value="CEO">CEO</SelectItem>
-                <SelectItem value="Employee">Employee</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrer par statut" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="active">Actifs</SelectItem>
-                <SelectItem value="inactive">Inactifs</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className="rounded-xl border border-border overflow-hidden">
             <Table>
               <TableHeader>
@@ -506,15 +535,11 @@ export function EnhancedAccountManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedAccounts.length === 0 ? (
+                {userAccounts.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-12">
                       <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
-                      <p className="text-muted-foreground">
-                        {searchQuery || roleFilter !== "all" || statusFilter !== "all" 
-                          ? "Aucun compte trouvé pour ces filtres" 
-                          : "Aucun compte utilisateur trouvé"}
-                      </p>
+                      <p className="text-muted-foreground">Aucun compte utilisateur trouvé</p>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -621,6 +646,13 @@ export function EnhancedAccountManager() {
                                     <Edit className="w-4 h-4 mr-2" />
                                     Modifier le rôle
                                   </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleResetPassword(account.id)}
+                                    className="text-amber-600"
+                                  >
+                                    <RefreshCw className="w-4 h-4 mr-2" />
+                                    Réinitialiser le mot de passe
+                                  </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
                                     onClick={() => {
@@ -648,12 +680,12 @@ export function EnhancedAccountManager() {
       </Card>
 
       {/* Pagination */}
-      {filteredAndSortedAccounts.length > 0 && (
+      {userAccounts.length > 0 && (
         <AdvancedPagination
           currentPage={currentPage}
           totalPages={totalPages}
           pageSize={pageSize}
-          totalItems={filteredAndSortedAccounts.length}
+          totalItems={userAccounts.length}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
         />
@@ -770,7 +802,6 @@ export function EnhancedAccountManager() {
               onClick={() => {
                 setIsCreateDialogOpen(false)
                 setFormData({ employeeId: "", role: "RH" })
-                setErrors({})
               }} 
               className="flex-1 h-10 rounded-lg text-sm"
             >
@@ -936,11 +967,42 @@ export function EnhancedAccountManager() {
                 </div>
               </div>
 
+              {/* Section Réinitialisation du mot de passe */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 pb-2 border-b">
+                  <Key className="w-4 h-4 text-amber-600" />
+                  <h3 className="text-base font-semibold">4. Réinitialisation du mot de passe</h3>
+                </div>
+                
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-amber-800 text-sm">Réinitialisation du mot de passe</p>
+                        <p className="text-xs text-amber-700 mt-1">
+                          Générer un nouveau mot de passe temporaire et l'envoyer par email à l'employé.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      onClick={() => handleResetPassword(selectedAccount.id)}
+                      className="w-full h-10 rounded-lg text-sm font-medium border-amber-300 text-amber-700 hover:bg-amber-100"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Réinitialiser le mot de passe
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
               {/* Section Actions dangereuses */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 pb-2 border-b">
                   <Trash2 className="w-4 h-4 text-destructive" />
-                  <h3 className="text-base font-semibold text-destructive">4. Suppression</h3>
+                  <h3 className="text-base font-semibold text-destructive">5. Suppression</h3>
                 </div>
                 
                 <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
@@ -1184,6 +1246,43 @@ export function EnhancedAccountManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Popup de succès pour la réinitialisation du mot de passe */}
+      <AlertDialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader className="text-center">
+            <div className="mx-auto w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-3">
+              <CheckCircle className="w-7 h-7 text-emerald-600" />
+            </div>
+            <AlertDialogTitle className="text-xl text-emerald-800">
+              Mot de passe réinitialisé avec succès !
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-emerald-700">
+              Un nouveau mot de passe temporaire a été généré pour 
+              <strong className="text-emerald-800"> {resetPasswordInfo?.employeeName} </strong>
+              {resetPasswordInfo?.emailSent && (
+                <>
+                  <br />
+                  <span className="text-emerald-600 font-medium">
+                    ✅ Un email a été envoyé avec les nouvelles identifiants
+                  </span>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-2">
+            <AlertDialogAction 
+              onClick={() => {
+                setIsSuccessDialogOpen(false)
+                setResetPasswordInfo(null)
+              }}
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

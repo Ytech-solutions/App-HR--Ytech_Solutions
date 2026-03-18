@@ -242,3 +242,76 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { id } = body
+
+    if (!id) {
+      return NextResponse.json({ error: "ID requis" }, { status: 400 })
+    }
+
+    // Vérifier si le compte existe
+    const account = await prisma.userAccount.findUnique({
+      where: { id },
+      include: {
+        employee: true
+      }
+    })
+
+    if (!account) {
+      return NextResponse.json({ error: "Compte non trouvé" }, { status: 404 })
+    }
+
+    // Générer un nouveau mot de passe temporaire
+    const temporaryPassword = AuthUtils.generateTemporaryPassword()
+    const hashedPassword = await AuthUtils.hashPassword(temporaryPassword)
+
+    // Mettre à jour le mot de passe
+    const updatedAccount = await prisma.userAccount.update({
+      where: { id },
+      data: {
+        passwordHash: hashedPassword,
+        updatedAt: new Date()
+      },
+      include: {
+        employee: {
+          include: {
+            department: true
+          }
+        }
+      }
+    })
+
+    // Envoyer l'email de réinitialisation (non bloquant)
+    let emailSent = false
+    try {
+      if (account.employee) {
+        emailSent = await emailService.sendTemporaryPasswordEmail(
+          `${account.employee.firstName} ${account.employee.lastName}`,
+          account.email,
+          temporaryPassword
+        )
+      }
+    } catch (emailError) {
+      emailSent = false
+    }
+
+    return NextResponse.json({
+      message: "Mot de passe réinitialisé avec succès",
+      temporaryPassword: temporaryPassword,
+      emailSent: emailSent,
+      account: {
+        id: updatedAccount.id,
+        email: updatedAccount.email,
+        employee: updatedAccount.employee ? {
+          firstName: updatedAccount.employee.firstName,
+          lastName: updatedAccount.employee.lastName
+        } : null
+      }
+    })
+  } catch (error) {
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
+  }
+}

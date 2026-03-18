@@ -28,7 +28,6 @@ export async function GET() {
       }))
     )
   } catch (error) {
-    console.error("GET /api/employees error:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -160,7 +159,6 @@ export async function PUT(request: NextRequest) {
       updatedAt: employee.updatedAt.toISOString(),
     })
   } catch (error) {
-    console.error("PUT /api/employees error:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -191,8 +189,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ message: "Employé supprimé avec succès" })
   } catch (error) {
-    console.error("DELETE /api/employees error:", error)
-    return NextResponse.json({ error: "Erreur serveur: " + error.message }, { status: 500 })
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
 
