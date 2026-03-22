@@ -210,23 +210,29 @@ export function RHEmployeesList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestion des Employés</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Gestion des Employés</h1>
           <p className="text-muted-foreground mt-1">
-            {employees.length} employés au total • {departments.length} départements
+            {employees.length} employés au total
           </p>
         </div>
-        {hasPermission("add_employee") && (
-          <Button onClick={handleAddClick} size="lg">
-            <UserPlus className="w-5 h-5 mr-2" />
-            Ajouter un employé
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="hidden sm:flex">
+            <Download className="w-4 h-4 mr-2" />
+            Exporter
           </Button>
-        )}
+          {hasPermission("add_employee") && (
+            <Button onClick={handleAddClick} size="lg" className="w-full sm:w-auto">
+              <UserPlus className="w-5 h-5 mr-2" />
+              Ajouter un employé
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Statistiques des employés - Style Boards comme la gestion des comptes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 rounded-2xl">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -277,7 +283,7 @@ export function RHEmployeesList() {
               <div>
                 <p className="text-sm font-medium text-emerald-900">Salaire Moyen</p>
                 <p className="text-2xl font-bold text-emerald-900">
-                  {employees.length > 0 ? Math.round(employees.reduce((sum, emp) => sum + emp.salary, 0) / employees.length).toLocaleString() : 0} €
+                  {employees.length > 0 ? Math.round(employees.reduce((sum, emp) => sum + emp.salary, 0) / employees.length).toLocaleString('fr-MA') : 0} MAD
                 </p>
               </div>
               <DollarSign className="w-8 h-8 text-emerald-600" />
@@ -487,7 +493,7 @@ export function RHEmployeesList() {
 
       {/* Employee Form Modal */}
       <EnhancedEmployeeForm
-        employee={selectedEmployee}
+        employee={selectedEmployee || undefined}
         open={isFormOpen}
         onClose={() => {
           setIsFormOpen(false)

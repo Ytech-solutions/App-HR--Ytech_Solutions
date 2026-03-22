@@ -20,9 +20,11 @@ import { Badge } from "@/components/ui/badge"
 interface SidebarProps {
   currentView: string
   onViewChange: (view: string) => void
+  isOpen?: boolean
+  onClose?: () => void
 }
 
-export function Sidebar({ currentView, onViewChange }: SidebarProps) {
+export function Sidebar({ currentView, onViewChange, isOpen = true, onClose }: SidebarProps) {
   const { user, logout, hasPermission } = useAuth()
 
   const getRoleLabel = (role: string) => {
@@ -66,7 +68,23 @@ export function Sidebar({ currentView, onViewChange }: SidebarProps) {
   ].filter((item) => item.show)
 
   return (
-    <aside className="w-64 bg-sidebar text-sidebar-foreground flex flex-col h-screen fixed left-0 top-0">
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/50 z-40 transition-opacity duration-200"
+          onClick={onClose}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <aside 
+        id="mobile-sidebar"
+        className={`fixed left-0 top-0 h-screen bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          w-64 md:translate-x-0 md:static md:z-auto
+        `}
+      >
       <div className="p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-11 h-11 bg-sidebar-primary rounded-xl shadow-lg">
@@ -84,7 +102,10 @@ export function Sidebar({ currentView, onViewChange }: SidebarProps) {
           {navItems.map((item) => (
             <li key={item.id}>
               <button
-                onClick={() => onViewChange(item.id)}
+                onClick={() => {
+                  onViewChange(item.id)
+                  onClose?.()
+                }}
                 className={cn(
                   "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                   currentView === item.id
@@ -117,12 +138,16 @@ export function Sidebar({ currentView, onViewChange }: SidebarProps) {
         <Button
           variant="ghost"
           className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-xl"
-          onClick={logout}
+          onClick={() => {
+            logout()
+            onClose?.()
+          }}
         >
           <LogOut className="w-5 h-5 mr-3" />
           Déconnexion
         </Button>
       </div>
     </aside>
+    </>
   )
 }

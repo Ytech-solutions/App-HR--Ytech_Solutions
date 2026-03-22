@@ -123,3 +123,55 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .hide-tablet {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}
+
+/* Mobile-first responsive table */
+@media (max-width: 640px) {
+  .responsive-table {
+    display: none;
+  }
+  
+  .mobile-cards {
+    display: block;
+  }
+}
+
+@media (min-width: 641px) {
+  .responsive-table {
+    display: table;
+  }
+  
+  .mobile-cards {
+    display: none;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better mobile touch targets */
+@media (max-width: 640px) {
+  button, a, input, select, textarea {
+    min-height: 44px;
+  }
+}

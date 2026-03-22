@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import type { Employee } from "@/lib/types"
 import { useEmployees } from "@/lib/employees-context"
-import { formatEUR, convertEURtoMADFormatted } from "@/lib/currency-utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FieldGroup, Field, FieldLabel } from "@/components/ui/field"
@@ -27,7 +26,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { UserPlus, Edit, Plus, Check, X, TrendingUp } from "lucide-react"
+import { UserPlus, Edit, Plus, Check, X } from "lucide-react"
 
 interface EmployeeFormProps {
   employee?: Employee
@@ -372,32 +371,21 @@ export function EmployeeForm({ employee, open, onClose, onSubmit, mode }: Employ
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="salary" className="text-sm font-medium">Salaire annuel</FieldLabel>
+                <FieldLabel htmlFor="salary" className="text-sm font-medium">Salaire annuel (MAD)</FieldLabel>
                 <div className="space-y-2">
                   <Input
                     id="salary"
                     type="number"
                     value={formData.salary}
                     onChange={(e) => handleChange("salary", parseInt(e.target.value) || 0)}
-                    placeholder="45000"
+                    placeholder="450000"
                     className={`h-11 rounded-xl border-border/50 focus:border-primary ${errors.salary ? "border-red-500" : ""}`}
                     required
                   />
                   {errors.salary && (
                     <p className="text-sm text-red-500 mt-1">{errors.salary}</p>
                   )}
-                  {formData.salary > 0 && (
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-amber-50 border border-amber-200">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-amber-600" />
-                        <span className="text-xs text-amber-700 font-medium">Conversion:</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-amber-800">{formatEUR(formData.salary)}</p>
-                        <p className="text-xs text-amber-600">≈ {convertEURtoMADFormatted(formData.salary)}</p>
-                      </div>
-                    </div>
-                  )}
+                  {/* Removed currency conversion - now directly in MAD */}
                 </div>
               </Field>
             </div>

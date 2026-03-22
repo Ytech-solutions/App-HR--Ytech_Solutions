@@ -6,7 +6,7 @@ import { mockUsers } from "./data"
 
 interface AuthContextType {
   user: User | null
-  login: (email: string, password: string) => Promise<boolean>
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
   isAuthenticated: boolean
   hasPermission: (permission: string) => boolean
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkSession()
   }, [])
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -76,12 +76,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.ok) {
         const data = await response.json()
         setUser(data.user)
-        return true
+        return { success: true }
+      } else {
+        const errorData = await response.json()
+        return { success: false, error: errorData.error || 'Email ou mot de passe incorrect' }
       }
-      return false
     } catch (error) {
-      // Login error
-      return false
+      return { success: false, error: 'Erreur de connexion' }
     }
   }
 

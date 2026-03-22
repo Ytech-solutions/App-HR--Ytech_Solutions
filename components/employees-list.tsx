@@ -112,15 +112,15 @@ export function EmployeesList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestion des Employés</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Gestion des Employés</h1>
           <p className="text-muted-foreground mt-1">
             {employees.length} employés au total
           </p>
         </div>
         {hasPermission("add_employee") && !isReadOnly && (
-          <Button onClick={handleAddClick} size="lg">
+          <Button onClick={handleAddClick} size="lg" className="w-full sm:w-auto">
             <UserPlus className="w-5 h-5 mr-2" />
             Ajouter un employé
           </Button>
@@ -129,7 +129,7 @@ export function EmployeesList() {
 
       {/* Cartes d'analytics pour le rôle admin */}
       {user?.role === "IT" && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -182,12 +182,12 @@ export function EmployeesList() {
                   <p className="text-sm font-medium text-amber-900">Salaire Moyen</p>
                   <p className="text-2xl font-bold text-amber-900">
                     {employees.length > 0 
-                      ? new Intl.NumberFormat('fr-FR', { 
+                      ? new Intl.NumberFormat('fr-MA', { 
                           style: 'currency', 
-                          currency: 'EUR',
+                          currency: 'MAD',
                           maximumFractionDigits: 0 
                         }).format(employees.reduce((sum, emp) => sum + emp.salary, 0) / employees.length)
-                      : "0 €"
+                      : "0 MAD"
                     }
                   </p>
                 </div>
@@ -235,8 +235,8 @@ export function EmployeesList() {
             </Select>
           </div>
 
-          {/* Table */}
-          <div className="rounded-xl border border-border overflow-hidden">
+          {/* Table for desktop, Cards for mobile */}
+          <div className="hidden sm:block rounded-xl border border-border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
@@ -333,6 +333,97 @@ export function EmployeesList() {
                 )}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Mobile Card Layout */}
+          <div className="sm:hidden space-y-3">
+            {filteredEmployees.length === 0 ? (
+              <div className="text-center py-12">
+                <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+                <p className="text-muted-foreground">Aucun employé trouvé</p>
+              </div>
+            ) : (
+              filteredEmployees.map((employee) => (
+                <Card key={employee.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                            {getInitials(employee.firstName, employee.lastName)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">
+                              {employee.firstName} {employee.lastName}
+                            </p>
+                            {employee.hasAccount && (
+                              <User className="w-3.5 h-3.5 text-emerald-600" />
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {employee.email}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge
+                        variant={employee.status === "active" ? "default" : "secondary"}
+                        className={
+                          employee.status === "active"
+                            ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+                            : ""
+                        }
+                      >
+                        {employee.status === "active" ? "Actif" : "Inactif"}
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Département:</span>
+                        <Badge variant="outline" className="font-normal text-xs">{employee.department}</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Poste:</span>
+                        <span className="text-sm font-medium">{employee.position}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-1 pt-2 border-t">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleViewClick(employee)}
+                        className="hover:bg-muted"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      {hasPermission("edit_employee") && !isReadOnly && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditClick(employee)}
+                          className="hover:bg-muted"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {hasPermission("delete_employee") && !isReadOnly && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDeleteClick(employee)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

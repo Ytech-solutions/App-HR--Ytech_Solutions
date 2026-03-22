@@ -232,7 +232,7 @@ export function UnifiedDashboard() {
       </div>
 
       {/* Main KPI Cards - More Compact */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-l-4 border-l-primary hover:shadow-md transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -309,7 +309,7 @@ export function UnifiedDashboard() {
 
       {/* Unified Tabs */}
       <Tabs defaultValue="analytics" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 h-9">
+        <TabsList className="grid w-full grid-cols-3 h-9 max-w-md mx-auto sm:max-w-none">
           <TabsTrigger value="analytics" className="flex items-center gap-1 text-xs">
             <BarChart3 className="w-3 h-3" />
             Analytics
@@ -326,7 +326,7 @@ export function UnifiedDashboard() {
 
         {/* Analytics Tab */}
         <TabsContent value="analytics" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {/* Department Analytics */}
             <Card>
               <CardHeader className="pb-3">
@@ -430,7 +430,7 @@ export function UnifiedDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
                   <div className="flex items-start gap-2">
                     <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -483,7 +483,7 @@ export function UnifiedDashboard() {
 
         {/* Departments Tab */}
         <TabsContent value="departments" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {departmentStats.map((dept) => {
               const performanceColor = dept.performanceScore >= 85 ? "bg-emerald-100 text-emerald-700" : 
                                    dept.performanceScore >= 70 ? "bg-blue-100 text-blue-700" : 
@@ -575,7 +575,7 @@ export function UnifiedDashboard() {
                   <CardDescription className="text-xs">Informations détaillées et employés</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-0">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
                       <div className="flex items-center gap-2 mb-1">
                         <Users className="w-3 h-3 text-blue-600" />
@@ -636,7 +636,7 @@ export function UnifiedDashboard() {
         {/* Activity Tab */}
         <TabsContent value="activity" className="space-y-4">
           {/* Dynamic Activity Overview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="border-l-4 border-l-blue-500">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">

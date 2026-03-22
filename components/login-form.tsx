@@ -78,12 +78,12 @@ export function LoginForm() {
 
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    const success = await login(email, password)
-    if (success) {
+    const result = await login(email, password)
+    if (result.success) {
       // La connexion a réussi, on ne recharge plus la page
       // Le contexte va se mettre à jour automatiquement
     } else {
-      setError("Email ou mot de passe incorrect")
+      setError(result.error || "Email ou mot de passe incorrect")
     }
     setIsLoading(false)
   }

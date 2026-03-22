@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: 'Ytech RH - Gestion des Employés',
   description: 'Application interne de gestion des ressources humaines pour Ytech Solutions',
   generator: 'v0.app',
+  viewport: 'width=device-width, initial-scale=1',
   icons: {
     icon: [
       {
