@@ -170,29 +170,25 @@ export function EnhancedSettingsPanel() {
 
   const getRoleName = (role: string) => {
     switch (role) {
-      case "IT": return "Administrateur IT"
+      case "ADMIN": return "Administrateur"
       case "RH": return "Ressources Humaines"
-      case "CEO": return "Directeur Général"
-      case "MANAGER": return "Manager"
-      case "EMPLOYEE": return "Employé"
+      case "EMPLOYE": return "Employe"
       default: return role
     }
   }
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case "IT": return "bg-purple-100 text-purple-800 border-purple-200"
+      case "ADMIN": return "bg-purple-100 text-purple-800 border-purple-200"
       case "RH": return "bg-emerald-100 text-emerald-800 border-emerald-200"
-      case "CEO": return "bg-amber-100 text-amber-800 border-amber-200"
-      case "MANAGER": return "bg-blue-100 text-blue-800 border-blue-200"
-      case "EMPLOYEE": return "bg-gray-100 text-gray-800 border-gray-200"
+      case "EMPLOYE": return "bg-amber-100 text-amber-800 border-amber-200"
       default: return "bg-gray-100 text-gray-800 border-gray-200"
     }
   }
 
   const getRolePermissions = (role: string) => {
     switch (role) {
-      case "IT":
+      case "ADMIN":
         return [
           "Accès complet au système",
           "Gestion des employés",
@@ -209,23 +205,10 @@ export function EnhancedSettingsPanel() {
           "Rapports RH",
           "Gestion des congés"
         ]
-      case "CEO":
+      case "EMPLOYE":
         return [
           "Lecture seule",
-          "Consultation des rapports",
-          "Vue d'ensemble",
-          "Analytics"
-        ]
-      case "MANAGER":
-        return [
-          "Gestion d'équipe",
-          "Rapports d'équipe",
-          "Validation des demandes"
-        ]
-      case "EMPLOYEE":
-        return [
           "Profil personnel",
-          "Demandes de congé",
           "Consultation des informations"
         ]
       default:
@@ -233,9 +216,9 @@ export function EnhancedSettingsPanel() {
     }
   }
 
-  const canAccessSecurityLogs = user?.role === "IT"
-  const canManageAccount = ["IT", "RH", "CEO"].includes(user?.role || "")
-  const canViewAdvancedSettings = user?.role === "IT"
+  const canAccessSecurityLogs = user?.role === "ADMIN"
+  const canManageAccount = ["ADMIN", "RH"].includes(user?.role || "")
+  const canViewAdvancedSettings = user?.role === "ADMIN"
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-6">

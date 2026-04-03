@@ -50,7 +50,7 @@ export function EmployeesList() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [formMode, setFormMode] = useState<"add" | "edit">("add")
 
-  const isReadOnly = user?.role === "CEO"
+  const isReadOnly = user?.role === "EMPLOYE"
 
   const filteredEmployees = useMemo(() => {
     return employees.filter((emp) => {
@@ -128,7 +128,7 @@ export function EmployeesList() {
       </div>
 
       {/* Cartes d'analytics pour le rôle admin */}
-      {user?.role === "IT" && (
+      {user?.role === "ADMIN" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <CardContent className="pt-6">

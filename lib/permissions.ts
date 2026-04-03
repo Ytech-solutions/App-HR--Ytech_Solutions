@@ -8,19 +8,19 @@ export interface RolePermissions {
 
 export const rolePermissions: RolePermissions[] = [
   {
-    role: "IT",
+    role: "ADMIN",
     permissions: ["view_dashboard", "view_employees", "add_employee", "edit_employee", "delete_employee", "view_details", "manage_accounts", "manage_settings", "change_password"],
-    description: "Admin IT - Accès complet à toutes les interfaces"
+    description: "Admin - Acces complet a toutes les interfaces"
   },
   {
     role: "RH", 
     permissions: ["view_dashboard", "view_employees", "add_employee", "edit_employee", "view_details", "change_password"],
-    description: "RH - Gestion des employés (sans suppression), pas d'accès aux comptes"
+    description: "RH - Gestion des employes (sans suppression), pas d'acces aux comptes"
   },
   {
-    role: "CEO",
-    permissions: ["view_dashboard", "view_employees", "view_details", "manage_accounts", "change_password"],
-    description: "CEO Directeur Général - Accès lecture seule avec visualisation des comptes"
+    role: "EMPLOYE",
+    permissions: ["view_dashboard", "view_details", "change_password"],
+    description: "Employe - Acces limite a son espace et son profil"
   }
 ]
 

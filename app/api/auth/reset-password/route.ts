@@ -2,14 +2,26 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { AuthUtils } from "@/lib/auth-utils"
 import { emailService } from "@/lib/email-service"
+import {
+  checkRateLimit,
+  getClientIp,
+  resetPasswordConfirmSchema,
+  resetPasswordRequestSchema,
+  tooManyRequestsResponse,
+} from "@/lib/security"
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { email } = body
+    const ip = getClientIp(request)
+    const body = resetPasswordRequestSchema.safeParse(await request.json())
+    if (!body.success) {
+      return NextResponse.json({ error: "Email invalide" }, { status: 400 })
+    }
 
-    if (!email) {
-      return NextResponse.json({ error: "Email requis" }, { status: 400 })
+    const { email } = body.data
+    const rateLimit = checkRateLimit(`reset-request:${ip}:${email}`, 15 * 60 * 1000, 5)
+    if (!rateLimit.allowed) {
+      return tooManyRequestsResponse(rateLimit.retryAfterSeconds)
     }
 
     // Vérifier si l'email existe dans la base de données
@@ -55,11 +67,16 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { token, newPassword } = body
+    const ip = getClientIp(request)
+    const body = resetPasswordConfirmSchema.safeParse(await request.json())
+    if (!body.success) {
+      return NextResponse.json({ error: "Token ou mot de passe invalide" }, { status: 400 })
+    }
 
-    if (!token || !newPassword) {
-      return NextResponse.json({ error: "Token et nouveau mot de passe requis" }, { status: 400 })
+    const { token, newPassword } = body.data
+    const rateLimit = checkRateLimit(`reset-confirm:${ip}`, 15 * 60 * 1000, 10)
+    if (!rateLimit.allowed) {
+      return tooManyRequestsResponse(rateLimit.retryAfterSeconds)
     }
 
     // Valider la force du mot de passe

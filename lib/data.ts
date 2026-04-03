@@ -3,9 +3,9 @@ import type { Employee, User, ActivityLog, UserAccount } from "./types"
 export const mockUsers: User[] = [
   {
     id: "1",
-    name: "Admin IT",
+    name: "Admin",
     email: "admin@ytech.com",
-    role: "IT",
+    role: "ADMIN",
     avatar: "AI",
   },
   {
@@ -17,9 +17,9 @@ export const mockUsers: User[] = [
   },
   {
     id: "3",
-    name: "Directeur Général",
+    name: "Employe",
     email: "directeur@ytech.com",
-    role: "CEO",
+    role: "EMPLOYE",
     avatar: "DG",
   },
 ]

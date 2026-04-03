@@ -378,11 +378,11 @@ export function EnhancedAccountManager() {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case "IT":
+      case "ADMIN":
         return <Shield className="w-4 h-4 text-purple-600" />
       case "RH":
         return <Users className="w-4 h-4 text-blue-600" />
-      case "CEO":
+      case "EMPLOYE":
         return <Briefcase className="w-4 h-4 text-emerald-600" />
       default:
         return <UserCheck className="w-4 h-4 text-gray-600" />
@@ -391,11 +391,11 @@ export function EnhancedAccountManager() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case "IT":
+      case "ADMIN":
         return "bg-purple-100 text-purple-800 border-purple-200"
       case "RH":
         return "bg-blue-100 text-blue-800 border-blue-200"
-      case "CEO":
+      case "EMPLOYE":
         return "bg-emerald-100 text-emerald-800 border-emerald-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
@@ -443,7 +443,7 @@ export function EnhancedAccountManager() {
             {userAccounts.length} comptes utilisateurs • {availableEmployees.length} employés sans compte
           </p>
         </div>
-        {currentUser?.role === "IT" && (
+        {currentUser?.role === "ADMIN" && (
         <Button 
           onClick={() => setIsCreateDialogOpen(true)}
           disabled={availableEmployees.length === 0}
@@ -486,9 +486,9 @@ export function EnhancedAccountManager() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-900">Admin IT</p>
+                <p className="text-sm font-medium text-purple-900">Admin</p>
                 <p className="text-2xl font-bold text-purple-900">
-                  {userAccounts.filter(acc => acc.role === "IT").length}
+                  {userAccounts.filter(acc => acc.role === "ADMIN").length}
                 </p>
               </div>
               <Shield className="w-8 h-8 text-purple-600" />
@@ -500,9 +500,9 @@ export function EnhancedAccountManager() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-emerald-900">CEO</p>
+                <p className="text-sm font-medium text-emerald-900">Employe</p>
                 <p className="text-2xl font-bold text-emerald-900">
-                  {userAccounts.filter(acc => acc.role === "CEO").length}
+                  {userAccounts.filter(acc => acc.role === "EMPLOYE").length}
                 </p>
               </div>
               <Briefcase className="w-8 h-8 text-emerald-600" />
@@ -582,7 +582,7 @@ export function EnhancedAccountManager() {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        {currentUser?.role === "IT" ? (
+                        {currentUser?.role === "ADMIN" ? (
                           <button
                             onClick={() => handleToggleAccountStatus(account.id, account.isActive)}
                             className={`relative h-6 w-12 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
@@ -635,7 +635,7 @@ export function EnhancedAccountManager() {
                                 <Info className="w-4 h-4 mr-2" />
                                 Détails du compte
                               </DropdownMenuItem>
-                              {currentUser?.role === "IT" && (
+                              {currentUser?.role === "ADMIN" && (
                                 <>
                                   <DropdownMenuItem
                                     onClick={() => {

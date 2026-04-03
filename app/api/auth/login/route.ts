@@ -2,13 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
+import { checkRateLimit, getClientIp, loginBodySchema, tooManyRequestsResponse } from '@/lib/security';
+import { normalizeRole } from '@/lib/iam';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const ip = getClientIp(request);
+    const parsedBody = loginBodySchema.safeParse(await request.json());
+
+    if (!parsedBody.success) {
+      return NextResponse.json({ error: 'Entrées invalides' }, { status: 400 });
+    }
+
+    const { email, password } = parsedBody.data;
+
+    const rateLimit = checkRateLimit(`login:${ip}:${email}`, 15 * 60 * 1000, 8);
+    if (!rateLimit.allowed) {
+      return tooManyRequestsResponse(rateLimit.retryAfterSeconds);
+    }
 
     const user = await prisma.userAccount.findUnique({
-      where: { email: email },
+      where: { email },
       include: {
         employee: {
           select: {
@@ -34,10 +48,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Create session
+    const normalizedRole = normalizeRole(user.role)
     const sessionData = {
       id: user.id,
       email: user.email,
-      role: user.role,
+      role: normalizedRole,
       name: user.employee?.firstName && user.employee?.lastName 
         ? `${user.employee.firstName} ${user.employee.lastName}` 
         : user.email.split('@')[0],
@@ -54,8 +69,8 @@ export async function POST(request: NextRequest) {
     cookieStore.set('session', JSON.stringify(sessionData), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 12, // 12 hours
       path: '/',
     });
 

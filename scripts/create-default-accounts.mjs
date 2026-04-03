@@ -7,7 +7,7 @@ const defaultAccounts = [
   {
     email: 'admin@ytech.com',
     password: 'demo123',
-    role: 'IT',
+    role: 'ADMIN',
     firstName: 'Admin',
     lastName: 'System',
     phone: '+212600000000',
@@ -38,7 +38,7 @@ async function createDefaultAccounts() {
 
     // Permissions selon le rôle
     const rolePermissions = {
-      IT: {
+      ADMIN: {
         canView: true,
         canAdd: true,
         canEdit: true,
@@ -90,13 +90,13 @@ async function createDefaultAccounts() {
           where: { email: account.email }
         })
 
-        if (!existingAccount) {
-          // Hasher le mot de passe avec plus de tours pour plus de sécurité
-          const saltRounds = 12
-          const hashedPassword = await bcrypt.hash(account.password, saltRounds)
+        // Hasher le mot de passe avec plus de tours pour plus de sécurité
+        const saltRounds = 12
+        const hashedPassword = await bcrypt.hash(account.password, saltRounds)
 
+        if (!existingAccount) {
           // Créer le compte utilisateur
-          const userAccount = await prisma.userAccount.create({
+          await prisma.userAccount.create({
             data: {
               employeeId: employee.id,
               email: account.email,
@@ -107,14 +107,27 @@ async function createDefaultAccounts() {
             }
           })
         } else {
-          // Le compte utilisateur existe déjà
+          // Resynchroniser le compte admin par défaut
+          await prisma.userAccount.update({
+            where: { email: account.email },
+            data: {
+              passwordHash: hashedPassword,
+              role: account.role,
+              ...rolePermissions[account.role],
+              isActive: true,
+              employeeId: employee.id,
+              updatedAt: new Date()
+            }
+          })
         }
       } catch (accountError) {
-        continue // Continuer avec le compte suivant
+        console.error(`Erreur lors du traitement du compte ${account.email}:`, accountError)
+        continue
       }
     }
 
   } catch (error) {
+    console.error('Erreur createDefaultAccounts:', error)
   } finally {
     await prisma.$disconnect()
   }
@@ -126,6 +139,7 @@ async function main() {
     await prisma.$connect()
     await createDefaultAccounts()
   } catch (error) {
+    console.error('Erreur de connexion base de donnees:', error)
     process.exit(1)
   }
 }

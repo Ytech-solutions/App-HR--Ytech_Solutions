@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { normalizeRole } from '@/lib/iam';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +13,11 @@ export async function GET(request: NextRequest) {
 
     try {
       const sessionData = JSON.parse(sessionCookie.value);
-      return NextResponse.json({ user: sessionData });
+      const user = {
+        ...sessionData,
+        role: normalizeRole(sessionData.role),
+      };
+      return NextResponse.json({ user });
     } catch (parseError) {
       return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
     }

@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import type { User, UserRole } from "./types"
 import { mockUsers } from "./data"
+import { normalizeRole } from "./iam"
 
 interface AuthContextType {
   user: User | null
@@ -17,7 +18,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const rolePermissions: Record<UserRole, string[]> = {
-  IT: [
+  ADMIN: [
     "view_employees",
     "add_employee",
     "edit_employee",
@@ -34,11 +35,7 @@ const rolePermissions: Record<UserRole, string[]> = {
     "view_dashboard_rh",
     "manage_departments",
   ],
-  CEO: [
-    "view_employees",
-    "view_dashboard_ceo",
-    "manage_accounts",
-  ],
+  EMPLOYE: ["view_dashboard_employee", "view_details", "change_password"],
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -52,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const response = await fetch('/api/auth/me')
         if (response.ok) {
           const data = await response.json()
-          setUser(data.user)
+          setUser(data.user ? { ...data.user, role: normalizeRole(data.user.role) } : null)
         }
       } catch (error) {
         // Session check error
@@ -75,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         const data = await response.json()
-        setUser(data.user)
+        setUser(data.user ? { ...data.user, role: normalizeRole(data.user.role) } : null)
         return { success: true }
       } else {
         const errorData = await response.json()

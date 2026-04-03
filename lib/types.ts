@@ -1,6 +1,6 @@
 export type Department = string
 
-export type UserRole = "IT" | "RH" | "CEO"
+export type UserRole = "ADMIN" | "RH" | "EMPLOYE"
 
 export type AccountPermission = "read" | "add" | "edit" | "delete"
 

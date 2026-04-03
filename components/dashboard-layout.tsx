@@ -50,7 +50,7 @@ export function DashboardLayout() {
         return <UnifiedDashboard />
       case "employees":
         // Use different employee lists based on user role
-        if (user?.role === "IT") {
+        if (user?.role === "ADMIN") {
           return <EmployeesList />
         } else {
           return <RHEmployeesList />
@@ -88,7 +88,7 @@ export function DashboardLayout() {
       />
       
       {/* Main Content */}
-      <main className="ml-0 md:ml-64 p-4 md:p-8 transition-colors duration-200 pt-16 md:pt-8">
+      <main className="ml-0 md:ml-56 lg:ml-64 p-4 md:p-8 transition-colors duration-200 pt-16 md:pt-8">
         {renderView()}
       </main>
     </div>

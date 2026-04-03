@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useEmployees } from "@/lib/employees-context"
 import { useAuth } from "@/lib/auth-context"
+import { getRoleLabel } from "@/lib/iam"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -205,7 +206,7 @@ export function UnifiedDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">
-            Dashboard {user?.role === "CEO" ? "Directeur Général" : user?.role === "RH" ? "Ressources Humaines" : user?.role === "IT" ? "Administrateur" : user?.role}
+            Dashboard {getRoleLabel(user?.role || "")}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             Bienvenue, {user?.name}. Vue complète de l'entreprise.

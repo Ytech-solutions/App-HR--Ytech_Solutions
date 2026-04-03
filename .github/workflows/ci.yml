@@ -18,12 +18,38 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: "npm"
 
       - name: Installer les dépendances
-        run: npm install
+        run: npm ci
+
+      - name: Vérifier le lint
+        run: npm run lint --if-present
+
+      - name: Vérifier TypeScript
+        run: npx tsc --noEmit
+
+      - name: Faire le build
+        run: npm run build
 
       - name: Lancer les tests
         run: npm test --if-present
 
-      - name: Faire le build
-        run: npm run build || true
+  security-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Audit de sécurité (dépendances)
+        run: npm run security:audit

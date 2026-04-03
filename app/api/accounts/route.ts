@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db"
 import { AuthUtils } from "@/lib/auth-utils"
 import { emailService } from "@/lib/email-service"
 import { getPermissionsByRole } from "@/lib/permissions"
+import { normalizeRole } from "@/lib/iam"
 
 export async function GET() {
   try {
@@ -22,8 +23,8 @@ export async function GET() {
         id: account.id,
         employeeId: account.employeeId,
         email: account.email,
-        role: account.role,
-        permissions: getPermissionsByRole(account.role),
+        role: normalizeRole(account.role),
+        permissions: getPermissionsByRole(normalizeRole(account.role)),
         canView: account.canView,
         canAdd: account.canAdd,
         canEdit: account.canEdit,
@@ -57,9 +58,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate role
-    const validRoles = ["IT", "RH", "CEO"]
-    if (!validRoles.includes(role)) {
-      return NextResponse.json({ error: `Rôle invalide. Rôles valides: ${validRoles.join(", ")}` }, { status: 400 })
+    const normalizedRole = normalizeRole(role)
+    const validRoles = ["ADMIN", "RH", "EMPLOYE"]
+    if (!validRoles.includes(normalizedRole)) {
+      return NextResponse.json({ error: `Role invalide. Roles valides: ${validRoles.join(", ")}` }, { status: 400 })
     }
 
     // Vérifier si l'employé existe
@@ -86,7 +88,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await AuthUtils.hashPassword(temporaryPassword)
 
     // Définir les permissions selon le rôle
-    const permissions = getPermissionsByRole(role)
+    const permissions = getPermissionsByRole(normalizedRole)
     const canView = permissions.includes("view_dashboard") || permissions.includes("view_employees")
     const canAdd = permissions.includes("add_employee")
     const canEdit = permissions.includes("edit_employee")
@@ -98,7 +100,7 @@ export async function POST(request: NextRequest) {
         employeeId,
         email: employee.email,
         passwordHash: hashedPassword,
-        role,
+        role: normalizedRole,
         canView,
         canAdd,
         canEdit,
@@ -132,8 +134,8 @@ export async function POST(request: NextRequest) {
       id: userAccount.id,
       employeeId: userAccount.employeeId,
       email: userAccount.email,
-      role: userAccount.role,
-      permissions: getPermissionsByRole(userAccount.role),
+      role: normalizeRole(userAccount.role),
+      permissions: getPermissionsByRole(normalizeRole(userAccount.role)),
       canView: userAccount.canView,
       canAdd: userAccount.canAdd,
       canEdit: userAccount.canEdit,
@@ -169,7 +171,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Définir les permissions selon le rôle
-    const permissions = getPermissionsByRole(role)
+    const normalizedRole = normalizeRole(role)
+    const permissions = getPermissionsByRole(normalizedRole)
     const canView = permissions.includes("view_dashboard") || permissions.includes("view_employees")
     const canAdd = permissions.includes("add_employee")
     const canEdit = permissions.includes("edit_employee")
@@ -178,7 +181,7 @@ export async function PUT(request: NextRequest) {
     const updatedAccount = await prisma.userAccount.update({
       where: { id },
       data: {
-        role,
+        role: normalizedRole,
         canView,
         canAdd,
         canEdit,
@@ -199,8 +202,8 @@ export async function PUT(request: NextRequest) {
       id: updatedAccount.id,
       employeeId: updatedAccount.employeeId,
       email: updatedAccount.email,
-      role: updatedAccount.role,
-      permissions: getPermissionsByRole(updatedAccount.role),
+      role: normalizeRole(updatedAccount.role),
+      permissions: getPermissionsByRole(normalizeRole(updatedAccount.role)),
       canView: updatedAccount.canView,
       canAdd: updatedAccount.canAdd,
       canEdit: updatedAccount.canEdit,
