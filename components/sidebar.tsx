@@ -70,7 +70,7 @@ export function Sidebar({ currentView, onViewChange, isOpen = true, onClose }: S
         id="mobile-sidebar"
         className={`fixed left-0 top-0 h-screen bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          w-64 md:w-56 lg:w-64 md:translate-x-0
+          w-64 md:w-56 lg:w-64 md:static md:translate-x-0
         `}
       >
       <div className="p-6 border-b border-sidebar-border">
