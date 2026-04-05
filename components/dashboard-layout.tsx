@@ -65,7 +65,7 @@ export function DashboardLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-200 md:flex">
+    <div className="min-h-screen bg-background transition-colors duration-200">
       {/* Mobile Menu Button */}
       <div className="md:hidden fixed top-4 left-4 z-50">
         <Button
@@ -79,18 +79,37 @@ export function DashboardLayout() {
         </Button>
       </div>
 
-      {/* Sidebar */}
-      <Sidebar 
-        currentView={currentView} 
-        onViewChange={setCurrentView} 
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-      
-      {/* Main Content */}
-      <main className="p-4 md:p-8 transition-colors duration-200 pt-16 md:pt-8 flex-1">
-        {renderView()}
-      </main>
+      {/* Desktop Layout */}
+      <div className="hidden md:flex md:flex-row md:min-h-screen">
+        {/* Sidebar */}
+        <Sidebar 
+          currentView={currentView} 
+          onViewChange={setCurrentView} 
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+        
+        {/* Main Content */}
+        <main className="flex-1 p-4 md:p-8 transition-colors duration-200">
+          {renderView()}
+        </main>
+      </div>
+
+      {/* Mobile Layout */}
+      <div className="md:hidden">
+        {/* Sidebar */}
+        <Sidebar 
+          currentView={currentView} 
+          onViewChange={setCurrentView} 
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+        
+        {/* Main Content */}
+        <main className="p-4 md:p-8 transition-colors duration-200 pt-16">
+          {renderView()}
+        </main>
+      </div>
     </div>
   )
 }
