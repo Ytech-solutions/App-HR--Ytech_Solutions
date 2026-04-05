@@ -65,7 +65,7 @@ export function DashboardLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-200">
+    <div className="min-h-screen bg-background transition-colors duration-200 md:flex">
       {/* Mobile Menu Button */}
       <div className="md:hidden fixed top-4 left-4 z-50">
         <Button
@@ -88,7 +88,7 @@ export function DashboardLayout() {
       />
       
       {/* Main Content */}
-      <main className="ml-0 md:ml-56 lg:ml-64 p-4 md:p-8 transition-colors duration-200 pt-16 md:pt-8">
+      <main className="p-4 md:p-8 transition-colors duration-200 pt-16 md:pt-8 flex-1">
         {renderView()}
       </main>
     </div>
